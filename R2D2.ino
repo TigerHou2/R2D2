@@ -72,117 +72,126 @@ void loop()
 
       
       // ================= SOUND CONTROLS =================
-
-      if (Xbox.getButtonClick(L1, i)) {
-        changeVolume(-4);
-        MP3Serial.write('v');
-        MP3Serial.write(vol);
-        continue;
-      }
-      if (Xbox.getButtonClick(R1, i)) {
-        changeVolume(4);
-        MP3Serial.write('v');
-        MP3Serial.write(vol);
-        continue;
-      }
       
-      if (Xbox.getButtonPress(DOWN, i)) {
-        if (Xbox.getButtonClick(A, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(theme);
+      if (channel_mp3 == channel) {
+        if (Xbox.getButtonClick(L1, i)) {
+          changeVolume(-4);
+          MP3Serial.write('v');
+          MP3Serial.write(vol);
         }
-        else if (Xbox.getButtonClick(B, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(cantina);
+        if (Xbox.getButtonClick(R1, i)) {
+          changeVolume(4);
+          MP3Serial.write('v');
+          MP3Serial.write(vol);
         }
-        else if (Xbox.getButtonClick(Y, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(emperor);
+        
+        if (Xbox.getButtonPress(DOWN, i)) {
+          if (Xbox.getButtonClick(A, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(theme);
+          }
+          else if (Xbox.getButtonClick(B, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(cantina);
+          }
+          else if (Xbox.getButtonClick(Y, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(emperor);
+          }
+          else if (Xbox.getButtonClick(X, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(chorus);
+          }
+          continue;
         }
-        else if (Xbox.getButtonClick(X, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(chorus);
+        if (Xbox.getButtonPress(UP, i)) {
+          if (Xbox.getButtonClick(A, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(scream);
+          }
+          else if (Xbox.getButtonClick(B, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(annoyed);
+          }
+          else if (Xbox.getButtonClick(Y, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(misc17);
+          }
+          else if (Xbox.getButtonClick(X, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(chortle);
+          }
+          continue;
         }
-        continue;
+        if (Xbox.getButtonPress(RIGHT, i)) {
+          if (Xbox.getButtonClick(A, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(sent3);
+          }
+          else if (Xbox.getButtonClick(B, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(doodoo);
+          }
+          else if (Xbox.getButtonClick(Y, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(wolfwhistle);
+          }
+          else if (Xbox.getButtonClick(X, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(shortcircuit);
+          }
+          continue;
+        }
+        if (Xbox.getButtonPress(LEFT, i)) {
+          if (Xbox.getButtonClick(A, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(leia);
+          }
+          else if (Xbox.getButtonClick(B, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(byte(ceil(random(0,54))));
+          }
+          else if (Xbox.getButtonClick(Y, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(sent17);
+          }
+          else if (Xbox.getButtonClick(X, i)) {
+            MP3Serial.write('t');
+            MP3Serial.write(ooh1);
+          }
+          continue;
+        }
       }
-      if (Xbox.getButtonPress(UP, i)) {
-        if (Xbox.getButtonClick(A, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(scream);
-        }
-        else if (Xbox.getButtonClick(B, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(annoyed);
-        }
-        else if (Xbox.getButtonClick(Y, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(misc17);
-        }
-        else if (Xbox.getButtonClick(X, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(chortle);
-        }
-        continue;
-      }
-      if (Xbox.getButtonPress(RIGHT, i)) {
-        if (Xbox.getButtonClick(A, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(sent3);
-        }
-        else if (Xbox.getButtonClick(B, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(doodoo);
-        }
-        else if (Xbox.getButtonClick(Y, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(wolfwhistle);
-        }
-        else if (Xbox.getButtonClick(X, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(shortcircuit);
-        }
-        continue;
-      }
-      if (Xbox.getButtonPress(LEFT, i)) {
-        if (Xbox.getButtonClick(A, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(leia);
-        }
-        else if (Xbox.getButtonClick(B, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(byte(ceil(random(0,54))));
-        }
-        else if (Xbox.getButtonClick(Y, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(sent17);
-        }
-        else if (Xbox.getButtonClick(X, i)) {
-          MP3Serial.write('t');
-          MP3Serial.write(ooh1);
-        }
-        continue;
-      }
+
       
       // ================= LEG CONTROLS =================
 
-//      LEGS.turn(mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i)));
-//      LEGS.drive(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i)));
+      if (channel_legs == channel) {
+        LEGS.turn(mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i)));
+        LEGS.drive(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i)));
+      }
 
       
       // ================= DOME CONTROLS =================
 
-      DOME.motor(-mapCtrl_dome(Xbox.getButtonPress(L2, i)) + mapCtrl_dome(Xbox.getButtonPress(R2, i)));
+      if (channel_dome == channel) {
+        cmd_dome = -mapCtrl_dome(Xbox.getButtonPress(L2, i)) + mapCtrl_dome(Xbox.getButtonPress(R2, i));
+        DOME.motor(cmd_dome);
+      }
+
       
       // ================= HOLO-PROJECTOR CONTROLS =================
+      if (channel_holo == channel) {
         if (Xbox.getButtonPress(B, i)) {
           HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(LeftHatX, i)));
           HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(LeftHatY, i)));
         }
+      }
       
     }
 
-  // Add brief delay between checking different controllers
-  delay(1);
+    channel += 1;
+    channel = channel % channel_max;
   }
 }
 

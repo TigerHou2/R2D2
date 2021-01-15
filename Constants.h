@@ -1,6 +1,26 @@
 #include <Servo.h>
 
 
+// DEBUG
+int alternator = 0;
+
+
+// CHANNELS
+// servos and motors combined draw too much power so we set channels for different components
+// during the main loop(), only one channel is activated per loop.
+#define channelA 0
+#define channelB 1
+#define channelC 2
+
+#define channel_legs channelA
+#define channel_dome channelB
+#define channel_mp3  channelC
+#define channel_holo channelC
+
+int channel = 0;
+int channel_max = 3;
+
+
 // HARDWARE SERIAL PORTS
 #define MP3Serial Serial1 // Pins 15/14 = RX/TX to the MP3 trigger soundboard.
 #define SRSerial  Serial2 // Pins 17/16 = RX/TX to the SyRen controller.
@@ -29,6 +49,10 @@ const byte leia = byte(54);
 byte random1; // assign this byte when button is pressed
 const byte sent17 = byte(48);
 const byte ooh1 = byte(25);
+
+
+// DOME VARIABLES
+int cmd_dome = 0;
 
 
 // HOLO-PROJECTOR VARIABLES
