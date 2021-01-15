@@ -16,32 +16,31 @@ Sabertooth LEGS(128, STSerial);   // We'll name the Sabertooth object LEGS by th
 void setup()
 {
   TCCR1B = TCCR1B & 0b11111000 | 0x02;
-  Serial.begin(115200);
-  if (Usb.Init() == -1)
-  {
+  Serial.begin(BAUD_SERIAL);
+  
+  if (Usb.Init() == -1) {
     Serial.print(F("\r\nOSC did not start"));
     while(1); //halt
   }
   Serial.print(F("\r\nXbox Wireless Receiver Library Started"));
 
   // Begin serial communications
-  SRSerial.begin(9600);   // Start SyRen communication (dome motors). MUST be 9600 baud
-                          // To configure DIP switches, look up "SyRen DIP Wizard" or go here:
-                          // https://www.dimensionengineering.com/datasheets/SyrenDIPWizard/start.htm
-  MP3Serial.begin(38400); // Start MP3 trigger soundboard communication. MUST be 38400 baud
-                          // To change the baud rate, an initialization file is needed. See:
-                          // https://learn.sparkfun.com/tutorials/mp3-trigger-hookup-guide-v24/
-  STSerial.begin(9600);   // Start Sabertooth communication (leg motors).
-                          // To configure DIP switches, look up "Sabertooth DIP Wizard" or go here:
-                          // https://www.dimensionengineering.com/datasheets/SabertoothDIPWizard/start.htm
-  
-  pinMode(LED_BUILTIN, OUTPUT);
+  SRSerial.begin(BAUD_SYREN);   // Start SyRen communication (dome motors). MUST be 9600 baud
+                                // To configure DIP switches, look up "SyRen DIP Wizard" or go here:
+                                // https://www.dimensionengineering.com/datasheets/SyrenDIPWizard/start.htm
+  MP3Serial.begin(BAUD_MP3);    // Start MP3 trigger soundboard communication. MUST be 38400 baud
+                                // To change the baud rate, an initialization file is needed. See:
+                                // https://learn.sparkfun.com/tutorials/mp3-trigger-hookup-guide-v24/
+  STSerial.begin(BAUD_SABER);   // Start Sabertooth communication (leg motors).
+                                // To configure DIP switches, look up "Sabertooth DIP Wizard" or go here:
+                                // https://www.dimensionengineering.com/datasheets/SabertoothDIPWizard/start.htm
 
-  // Set sound to max
+  // Set initial volume
   MP3Serial.write('v');
   MP3Serial.write(vol);
 
-  // Set digital pins to output for holo-projectors
+  // Set digital pins to output mode for holo-projectors
+  //    and attach digital pins to motor outputs
   pinMode(HP1_LED, OUTPUT);
   HP1S1.attach(HP1_S1);
   HP1S2.attach(HP1_S2);
@@ -53,6 +52,8 @@ void setup()
   HP3S2.attach(HP3_S2);
 
   // Set initial positions for holo-projector servos
+  //    these values should be calibrated after setting the servo to 90
+  //    and then attaching the servo arms parallel to the motor mount
   HP1S1.write(HP1S1_center); // Center for HP 1 servo 1
   HP1S2.write(HP1S2_center); // Center for HP 1 servo 2
   HP2S1.write(HP2S1_center); // Center for HP 2 servo 1
@@ -177,6 +178,7 @@ void loop()
       if (channel_dome == channel) {
         cmd_dome = -mapCtrl_dome(Xbox.getButtonPress(L2, i)) + mapCtrl_dome(Xbox.getButtonPress(R2, i));
         DOME.motor(cmd_dome);
+        Serial.println(cmd_dome);
       }
 
       
@@ -190,13 +192,17 @@ void loop()
       
     }
 
+    // switch channels after every loop()
+    //    different parts of the R2D2 electronics are active on different channels
+    //    only one channel is active per loop()
+    //    this is done to prevent components overdrawing current and misbehaving
     channel += 1;
     channel = channel % channel_max;
   }
 }
 
 
-int mapCtrl_dome(int input) {
+int mapCtrl_dome(int input) {   // map Xbox R2/L2 controls to dome motor inputs
   static const int maxIn = 255;
   static const int maxOut = 255;
   static const int deadzone = 20;
@@ -205,7 +211,7 @@ int mapCtrl_dome(int input) {
 }
 
 
-int mapCtrl_legs(int input) {
+int mapCtrl_legs(int input) {   // map Xbox left stick controls to leg motor inputs
   static const int maxIn = 32767;
   static const int maxOut = 127;
   static const int deadzone = 14000;
@@ -213,7 +219,7 @@ int mapCtrl_legs(int input) {
   return output;
 }
 
-int mapCtrl_holo(int input){
+int mapCtrl_holo(int input){    // map Xbox left stick controls to holo-projector servo inputs
   static const int maxIn = 32767;
   static const int maxOut = servo_rot_max;
   int output = map(max(input,-maxIn),0,maxIn,0,maxOut);
@@ -221,13 +227,13 @@ int mapCtrl_holo(int input){
 }
 
 
-void changeVolume(int delta) {
+void changeVolume(int delta) {  // map Xbox R1/L1 controls to MP3 speaker volume controls
   static int v = (int) vol - delta;
-  v = (v>=40) ? 40 : ((v<0) ? 0 : v); // the max volume is 0, and the min volume is 40.
+  v = (v>=40) ? 40 : ((v<0) ? 0 : v); // the max volume is 0, and the min volume is 40
   vol = byte(v);
 }
 
 
-template <typename T> int sgn(T val) {
+template <typename T> int sgn(T val) {  // returns the integer sign (-1 or 1) of the input
     return (T(0) < val) - (val < T(0));
 }
