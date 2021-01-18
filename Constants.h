@@ -45,6 +45,7 @@ uint8_t channel_max = 3;
 
 // ================= SOUND VARIABLES =================
 
+bool mp3Enabled = false; // allow volume adjustment only when true
 byte vol = byte(10); // initial volume is 10, with 0 = highest and 40 = lowest
 
 const byte scream = byte(1);
@@ -96,15 +97,22 @@ const uint8_t HP3_LED = 46;   // digital pinouts for holo-projector 3
 const uint8_t HP3_S1  = 48;
 const uint8_t HP3_S2  = 50;
 
-const uint8_t HP1S1_center = 80;  // neutral angle of holo-projector 1, servo 1 (1S1)
-const uint8_t HP1S2_center = 70;  // neutral angle of holo-projector 1, servo 2 (1S2)
-const uint8_t HP2S1_center = 80;
-const uint8_t HP2S2_center = 70;  // these values should be calibrated after setting the servo to 90
-const uint8_t HP3S1_center = 80;  //    and then attaching the servo arms parallel to the motor mount.
-const uint8_t HP3S2_center = 70;  // when the holo-projector is pointed down, the motors should be
+const uint8_t HP1S1_center = 75;  // neutral angle of holo-projector 1, servo 1 (1S1)
+const uint8_t HP1S2_center = 80;  // neutral angle of holo-projector 1, servo 2 (1S2)
+const uint8_t HP2S1_center = 90;
+const uint8_t HP2S2_center = 80;  // these values should be calibrated after setting the servo to 90
+const uint8_t HP3S1_center = 110; //    and then attaching the servo arms parallel to the motor mount.
+const uint8_t HP3S2_center = 75;  // when the holo-projector is pointed down, the motors should be
                               //    arranged in a clockwise order with arms pointed clockwise also.
 
 const uint8_t servo_rot_max = 30; // max rotation of holo-projector servos about neutral point
+
+const unsigned long doubleClickMinDelay = 30;
+const unsigned long doubleClickMaxDelay = 500;
+unsigned long lastClick[3] = {0,0,0};
+unsigned long thisClick = 0;
+
+bool hpEnable[3] = {false,false,false};
 
 Servo HP1S1;  // create servo objects
 Servo HP1S2;

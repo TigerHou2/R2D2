@@ -73,121 +73,112 @@ void loop()
 
       
       // ================= SOUND CONTROLS =================
+      //    Trigger a sound effect by pressing and holding any button on the D-pad
+      //      and clicking any of the X/Y/A/B buttons.
+      //    Control volume by pressing and holding any button on the D-pad
+      //      and clicking the L1/R1 bumpers for -/+, respectively.
       
       if (channel_mp3 == channel) {
-        if (Xbox.getButtonClick(L1, i)) {
-          changeVolume(-4);
-          MP3Serial.write('v');
-          MP3Serial.write(vol);
-        }
-        if (Xbox.getButtonClick(R1, i)) {
-          changeVolume(4);
-          MP3Serial.write('v');
-          MP3Serial.write(vol);
-        }
-        
+        mp3Enabled = true;
         if (Xbox.getButtonPress(DOWN, i)) {
-          if (Xbox.getButtonClick(A, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(theme);
-          }
-          else if (Xbox.getButtonClick(B, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(cantina);
-          }
-          else if (Xbox.getButtonClick(Y, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(emperor);
-          }
-          else if (Xbox.getButtonClick(X, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(chorus);
-          }
-          continue;
+          if      (Xbox.getButtonClick(A, i)) { MP3Serial.write('t'); MP3Serial.write(theme); }
+          else if (Xbox.getButtonClick(B, i)) { MP3Serial.write('t'); MP3Serial.write(cantina); }
+          else if (Xbox.getButtonClick(Y, i)) { MP3Serial.write('t'); MP3Serial.write(emperor); }
+          else if (Xbox.getButtonClick(X, i)) { MP3Serial.write('t'); MP3Serial.write(chorus); }
         }
-        if (Xbox.getButtonPress(UP, i)) {
-          if (Xbox.getButtonClick(A, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(scream);
-          }
-          else if (Xbox.getButtonClick(B, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(annoyed);
-          }
-          else if (Xbox.getButtonClick(Y, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(misc17);
-          }
-          else if (Xbox.getButtonClick(X, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(chortle);
-          }
-          continue;
+        else if (Xbox.getButtonPress(UP, i)) {
+          if      (Xbox.getButtonClick(A, i)) { MP3Serial.write('t'); MP3Serial.write(scream); }
+          else if (Xbox.getButtonClick(B, i)) { MP3Serial.write('t'); MP3Serial.write(annoyed); }
+          else if (Xbox.getButtonClick(Y, i)) { MP3Serial.write('t'); MP3Serial.write(misc17); }
+          else if (Xbox.getButtonClick(X, i)) { MP3Serial.write('t'); MP3Serial.write(chortle); }
         }
-        if (Xbox.getButtonPress(RIGHT, i)) {
-          if (Xbox.getButtonClick(A, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(sent3);
-          }
-          else if (Xbox.getButtonClick(B, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(doodoo);
-          }
-          else if (Xbox.getButtonClick(Y, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(wolfwhistle);
-          }
-          else if (Xbox.getButtonClick(X, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(shortcircuit);
-          }
-          continue;
+        else if (Xbox.getButtonPress(RIGHT, i)) {
+          if      (Xbox.getButtonClick(A, i)) { MP3Serial.write('t'); MP3Serial.write(sent3); }
+          else if (Xbox.getButtonClick(B, i)) { MP3Serial.write('t'); MP3Serial.write(doodoo); }
+          else if (Xbox.getButtonClick(Y, i)) { MP3Serial.write('t'); MP3Serial.write(wolfwhistle); }
+          else if (Xbox.getButtonClick(X, i)) { MP3Serial.write('t'); MP3Serial.write(shortcircuit); }
         }
-        if (Xbox.getButtonPress(LEFT, i)) {
-          if (Xbox.getButtonClick(A, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(leia);
-          }
-          else if (Xbox.getButtonClick(B, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(byte(ceil(random(0,54))));
-          }
-          else if (Xbox.getButtonClick(Y, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(sent17);
-          }
-          else if (Xbox.getButtonClick(X, i)) {
-            MP3Serial.write('t');
-            MP3Serial.write(ooh1);
-          }
-          continue;
+        else if (Xbox.getButtonPress(LEFT, i)) {
+          if      (Xbox.getButtonClick(A, i)) { MP3Serial.write('t'); MP3Serial.write(leia); }
+          else if (Xbox.getButtonClick(B, i)) { MP3Serial.write('t'); MP3Serial.write(byte(ceil(random(0,54)))); }
+          else if (Xbox.getButtonClick(Y, i)) { MP3Serial.write('t'); MP3Serial.write(sent17); }
+          else if (Xbox.getButtonClick(X, i)) { MP3Serial.write('t'); MP3Serial.write(ooh1); }
+        }
+        else { mp3Enabled = false; }
+        
+        if (mp3Enabled) {
+          if (Xbox.getButtonClick(L1, i)) {
+            changeVolume(-4); MP3Serial.write('v'); MP3Serial.write(vol); }
+          if (Xbox.getButtonClick(R1, i)) {
+            changeVolume(4); MP3Serial.write('v'); MP3Serial.write(vol); }
+          mp3Enabled = false;
         }
       }
 
       
       // ================= LEG CONTROLS =================
+      //    Drive the R2D2 using the left joystick.
 
       if (channel_legs == channel) {
-        LEGS.turn(mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i)));
+        LEGS.turn( mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i)));
         LEGS.drive(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i)));
       }
 
       
       // ================= DOME CONTROLS =================
+      //    Rotate the dome by pressing L2/R2 triggers.
 
       if (channel_dome == channel) {
-        cmd_dome = -mapCtrl_dome(Xbox.getButtonPress(L2, i)) + mapCtrl_dome(Xbox.getButtonPress(R2, i));
+        cmd_dome = - mapCtrl_dome(Xbox.getButtonPress(L2, i)) 
+                   + mapCtrl_dome(Xbox.getButtonPress(R2, i));
         DOME.motor(cmd_dome);
-        Serial.println(cmd_dome);
       }
 
       
       // ================= HOLO-PROJECTOR CONTROLS =================
+      //    Toggle individual holo-projector controls by double clicking X/Y/B
+      //      and using the right joystick to control active holo-projectors.
+      //    Press and hold X/Y/B and click L1/R1 bumpers to cycle holo-projector light modes.
+      
       if (channel_holo == channel) {
-        if (Xbox.getButtonPress(B, i)) {
-          HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(LeftHatX, i)));
-          HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(LeftHatY, i)));
+
+//        if (Xbox.getButtonClick(X, i) && checkDoubleClick[0]) {
+//          hpEnable[0] = !hpEnable[0];
+//        }
+//        if (Xbox.getButtonClick(Y, i) && checkDoubleClick[1]) {
+//          hpEnable[1] = !hpEnable[1];
+//          Serial.println("Double click!");
+//        }
+//        if (Xbox.getButtonClick(B, i) && checkDoubleClick[2]) {
+//          hpEnable[2] = !hpEnable[2];
+//        }
+//
+//        if (hpEnable[0]) {
+//          HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+//          HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+//        }
+//        if (hpEnable[1]) {
+//          HP2S1.write(HP2S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+//          HP2S2.write(HP2S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+//        }
+//        if (hpEnable[2]) {
+//          HP3S1.write(HP3S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+//          HP3S2.write(HP3S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+//        }
+
+        if (1) {
+          HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+          HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
         }
+        if (0){
+          HP2S1.write(HP2S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+          HP2S2.write(HP2S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+        }
+        if (0){
+          HP3S1.write(HP3S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
+          HP3S2.write(HP3S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+        }
+
       }
       
     }
@@ -211,7 +202,7 @@ int mapCtrl_dome(int input) {   // map Xbox R2/L2 controls to dome motor inputs
 }
 
 
-int mapCtrl_legs(int input) {   // map Xbox left stick controls to leg motor inputs
+int mapCtrl_legs(int input) {   // map Xbox left joystick controls to leg motor inputs
   static const int maxIn = 32767;
   static const int maxOut = 127;
   static const int deadzone = 14000;
@@ -219,11 +210,26 @@ int mapCtrl_legs(int input) {   // map Xbox left stick controls to leg motor inp
   return output;
 }
 
-int mapCtrl_holo(int input){    // map Xbox left stick controls to holo-projector servo inputs
+
+int mapCtrl_holo(int input){    // map Xbox right joystick controls to holo-projector servo inputs
   static const int maxIn = 32767;
   static const int maxOut = servo_rot_max;
   int output = map(max(input,-maxIn),0,maxIn,0,maxOut);
   return output;
+}
+
+
+bool checkDoubleClick(int holoID) {
+  thisClick = millis();
+  if ( ((thisClick-lastClick[holoID]) > doubleClickMinDelay) 
+     &&((thisClick-lastClick[holoID]) < doubleClickMaxDelay) ) {
+    Serial.println(thisClick-lastClick[holoID]);
+    return true;  // is a double click
+  }
+  else {
+    lastClick[holoID] = thisClick;
+    return false; // is not a double click
+  }
 }
 
 
