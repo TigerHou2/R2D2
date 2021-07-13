@@ -2,16 +2,11 @@
 #include <Servo.h>
 #include "Constants.h"
 #include "SyRenSimplified.h"
-#include "Sabertooth.h"
-//#ifdef dobogusinclude
-//#include <spi4teensy3.h>
-//#endif
 
 USB Usb;
 XBOXRECV Xbox(&Usb);
 
 SyRenSimplified DOME(SRSerial);   // We'll name the SyRen object DOME b/c it controls the dome
-Sabertooth LEGS(128, STSerial);   // We'll name the Sabertooth object LEGS by the same logic
 
 void setup()
 {
@@ -31,35 +26,38 @@ void setup()
   MP3Serial.begin(BAUD_MP3);    // Start MP3 trigger soundboard communication. MUST be 38400 baud
                                 // To change the baud rate, an initialization file is needed. See:
                                 // https://learn.sparkfun.com/tutorials/mp3-trigger-hookup-guide-v24/
-  STSerial.begin(BAUD_SABER);   // Start Sabertooth communication (leg motors).
-                                // To configure DIP switches, look up "Sabertooth DIP Wizard" or go here:
-                                // https://www.dimensionengineering.com/datasheets/SabertoothDIPWizard/start.htm
 
   // Set initial volume
   MP3Serial.write('v');
   MP3Serial.write(vol);
 
+  LegR.attach(22);
+  LegL.attach(24);
+  LegR.write(90);
+  LegL.write(90);
+  
   // Set digital pins to output mode for holo-projectors
   //    and attach digital pins to motor outputs
-  pinMode(HP1_LED, OUTPUT);
-  HP1S1.attach(HP1_S1);
-  HP1S2.attach(HP1_S2);
-  pinMode(HP2_LED, OUTPUT);
-  HP2S1.attach(HP2_S1);
-  HP2S2.attach(HP2_S2);
-  pinMode(HP3_LED, OUTPUT);
-  HP3S1.attach(HP3_S1);
-  HP3S2.attach(HP3_S2);
+  pinMode(HP_LED[0], OUTPUT);
+  HP1S1.attach(HP_S1_pin[0]);
+  HP1S2.attach(HP_S2_pin[0]);
+  pinMode(HP_LED[1], OUTPUT);
+  HP2S1.attach(HP_S1_pin[1]);
+  HP2S2.attach(HP_S2_pin[1]);
+  pinMode(HP_LED[2], OUTPUT);
+  HP3S1.attach(HP_S1_pin[2]);
+  HP3S2.attach(HP_S2_pin[2]);
 
   // Set initial positions for holo-projector servos
   //    these values should be calibrated after setting the servo to 90
   //    and then attaching the servo arms parallel to the motor mount
-  HP1S1.write(HP1S1_center); // Center for HP 1 servo 1
-  HP1S2.write(HP1S2_center); // Center for HP 1 servo 2
-  HP2S1.write(HP2S1_center); // Center for HP 2 servo 1
-  HP2S2.write(HP2S2_center); // Center for HP 2 servo 2
-  HP3S1.write(HP3S1_center); // Center for HP 3 servo 1
-  HP3S2.write(HP3S2_center); // Center for HP 3 servo 2
+  HP1S1.write(HP_S1_center[0]); // Center for HP 1 servo 1
+  HP1S2.write(HP_S2_center[0]); // Center for HP 1 servo 2
+  HP2S1.write(HP_S1_center[1]); // Center for HP 2 servo 1
+  HP2S2.write(HP_S2_center[1]); // Center for HP 2 servo 2
+  HP3S1.write(HP_S1_center[2]); // Center for HP 3 servo 1
+  HP3S2.write(HP_S2_center[2]); // Center for HP 3 servo 2
+
 }
 
 
@@ -85,6 +83,7 @@ void loop()
           else if (Xbox.getButtonClick(B, i)) { MP3Serial.write('t'); MP3Serial.write(cantina); }
           else if (Xbox.getButtonClick(Y, i)) { MP3Serial.write('t'); MP3Serial.write(emperor); }
           else if (Xbox.getButtonClick(X, i)) { MP3Serial.write('t'); MP3Serial.write(chorus); }
+        Serial.println("Here");
         }
         else if (Xbox.getButtonPress(UP, i)) {
           if      (Xbox.getButtonClick(A, i)) { MP3Serial.write('t'); MP3Serial.write(scream); }
@@ -108,9 +107,9 @@ void loop()
         
         if (mp3Enabled) {
           if (Xbox.getButtonClick(L1, i)) {
-            changeVolume(-4); MP3Serial.write('v'); MP3Serial.write(vol); }
+            changeVolume(-2); MP3Serial.write('v'); MP3Serial.write(vol);}
           if (Xbox.getButtonClick(R1, i)) {
-            changeVolume(4); MP3Serial.write('v'); MP3Serial.write(vol); }
+            changeVolume(2); MP3Serial.write('v'); MP3Serial.write(vol);}
           mp3Enabled = false;
         }
       }
@@ -119,11 +118,13 @@ void loop()
       // ================= LEG CONTROLS =================
       //    Drive the R2D2 using the left joystick.
 
-      if (channel_legs == channel) {
-        LEGS.turn( mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i)));
-        LEGS.drive(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i)));
+      if (channel_legL == channel) {
+          LegL.write(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i))+mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))-90);      
       }
 
+      if (channel_legR == channel) {
+          LegR.write(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i))-mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))+90);
+      }
       
       // ================= DOME CONTROLS =================
       //    Rotate the dome by pressing L2/R2 triggers.
@@ -142,45 +143,69 @@ void loop()
       
       if (channel_holo == channel) {
 
-//        if (Xbox.getButtonClick(X, i) && checkDoubleClick[0]) {
-//          hpEnable[0] = !hpEnable[0];
-//        }
-//        if (Xbox.getButtonClick(Y, i) && checkDoubleClick[1]) {
-//          hpEnable[1] = !hpEnable[1];
-//          Serial.println("Double click!");
-//        }
-//        if (Xbox.getButtonClick(B, i) && checkDoubleClick[2]) {
-//          hpEnable[2] = !hpEnable[2];
-//        }
-//
-//        if (hpEnable[0]) {
-//          HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-//          HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-//        }
-//        if (hpEnable[1]) {
-//          HP2S1.write(HP2S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-//          HP2S2.write(HP2S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-//        }
-//        if (hpEnable[2]) {
-//          HP3S1.write(HP3S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-//          HP3S2.write(HP3S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-//        }
+        if (Xbox.getButtonClick(X, i) && checkDoubleClick(1)) {
+          hpEnable[0] = !hpEnable[0];
+        }
+        if (Xbox.getButtonClick(A, i) && checkDoubleClick(2)) {
+          hpEnable[1] = !hpEnable[1];
+        }
+        if (Xbox.getButtonClick(B, i) && checkDoubleClick(3)) {
+          hpEnable[2] = !hpEnable[2];
+        }
+          
+        for(int j = 0; j < 3; j++) { // loop through each HP
 
-        if (1) {
-          HP1S1.write(HP1S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-          HP1S2.write(HP1S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-        }
-        if (0){
-          HP2S1.write(HP2S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-          HP2S2.write(HP2S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-        }
-        if (0){
-          HP3S1.write(HP3S1_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i)));
-          HP3S2.write(HP3S2_center + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
-        }
+          if (hpEnable[j]) {
+            if (j==1) { // glued in servo 2 incorrectly so need to fix controls with software 
+              HP_S1[j].write(HP_S1_center[j] - mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i))); 
+            }
+            else { HP_S1[j].write(HP_S1_center[j] + mapCtrl_holo(Xbox.getAnalogHat(RightHatX, i))); }
+            HP_S2[j].write(HP_S2_center[j] + mapCtrl_holo(Xbox.getAnalogHat(RightHatY, i)));
+            if (Xbox.getButtonClick(Y, i)) {
+              LED_mode[j] += 1;
+              LED_mode[j] = LED_mode[j] % max_LED_mode;
+            }
+          }
 
+          if (LED_mode[j] == 0) {
+            // always off
+            digitalWrite(HP_LED[j], LOW);
+          }
+          else if (LED_mode[j] == 1) { 
+            // always on
+            digitalWrite(HP_LED[j], HIGH);
+          }
+          
+          else if (LED_mode[j] == 2) {
+            // blink in 1 sec intervals
+            if (millis() >= LED_timer[j] + 1000) {
+              LED_timer[j] = millis();
+              LED_state[j] = !LED_state[j];
+            }
+            if (LED_state[j]) {
+              digitalWrite(HP_LED[j], HIGH);
+            }
+            else {
+              digitalWrite(HP_LED[j], LOW);
+            }
+          }
+          
+          else if (LED_mode[j] == 3) {
+            // blink in 0.5  sec intervals
+            if (millis() >= LED_timer[j] + 500) {
+              LED_timer[j] = millis();
+              LED_state[j] = !LED_state[j];
+            }
+            if (LED_state[j]) {
+              digitalWrite(HP_LED[j], HIGH);
+            }
+            else {
+              digitalWrite(HP_LED[j], LOW);
+            }
+              
+          }
+        }
       }
-      
     }
 
     // switch channels after every loop()
@@ -204,9 +229,9 @@ int mapCtrl_dome(int input) {   // map Xbox R2/L2 controls to dome motor inputs
 
 int mapCtrl_legs(int input) {   // map Xbox left joystick controls to leg motor inputs
   static const int maxIn = 32767;
-  static const int maxOut = 127;
   static const int deadzone = 14000;
-  int output = map(constrain(abs(input),deadzone,maxIn),deadzone,maxIn,0,maxOut) * sgn(input);
+  int temp = max(deadzone,abs(min(max(-maxIn,input),maxIn)));
+  int output = map(temp,deadzone,maxIn,0,max_leg_speed) * sgn(input)+90;
   return output;
 }
 
@@ -221,6 +246,7 @@ int mapCtrl_holo(int input){    // map Xbox right joystick controls to holo-proj
 
 bool checkDoubleClick(int holoID) {
   thisClick = millis();
+  holoID = holoID - 1;
   if ( ((thisClick-lastClick[holoID]) > doubleClickMinDelay) 
      &&((thisClick-lastClick[holoID]) < doubleClickMaxDelay) ) {
     Serial.println(thisClick-lastClick[holoID]);
@@ -234,7 +260,7 @@ bool checkDoubleClick(int holoID) {
 
 
 void changeVolume(int delta) {  // map Xbox R1/L1 controls to MP3 speaker volume controls
-  static int v = (int) vol - delta;
+  int v = (int) vol - delta;
   v = (v>=40) ? 40 : ((v<0) ? 0 : v); // the max volume is 0, and the min volume is 40
   vol = byte(v);
 }

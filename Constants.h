@@ -14,14 +14,18 @@
 #define channelA  0
 #define channelB  1
 #define channelC  2
+#define channelD  3
+#define channelE  4
 
-#define channel_legs  channelA
+#define channel_legL  channelA
 #define channel_dome  channelB
-#define channel_mp3   channelC
-#define channel_holo  channelC
+#define channel_legR  channelC
+#define channel_mp3   channelD
+#define channel_holo  channelE
 
 uint8_t channel = 0;
-uint8_t channel_max = 3;
+uint8_t channel_max = 5;
+
 
 /*  Note: Servos and motors combined draw too much power for the batteries to handle.
  *        To resolve this issue, we set channels for different components to run on.
@@ -30,9 +34,8 @@ uint8_t channel_max = 3;
 
 // ================= HARDWARE SERIAL PORTS =================
 
-#define MP3Serial Serial1 // Pins 15/14 = RX/TX to the MP3 trigger soundboard.
+#define MP3Serial Serial3 // Pins 15/14 = RX/TX to the MP3 trigger soundboard.
 #define SRSerial  Serial2 // Pins 17/16 = RX/TX to the SyRen controller.
-#define STSerial  Serial3 // Pins 19/18 = RX/TX to the Sabertooth controller.
 
 /*  Note: We need to use the built-in hardware serial ports because SoftwareSerial uses
  *        interrupts which cause the digital pin outputs to be stopped and restarted.
@@ -46,7 +49,7 @@ uint8_t channel_max = 3;
 // ================= SOUND VARIABLES =================
 
 bool mp3Enabled = false; // allow volume adjustment only when true
-byte vol = byte(10); // initial volume is 10, with 0 = highest and 40 = lowest
+byte vol = byte(25); // initial volume is 10, with 0 = highest and 40 = lowest
 
 const byte scream = byte(1);
 const byte annoyed = byte(8);
@@ -80,32 +83,31 @@ const byte ooh1 = byte(25);
 
 // ================= DOME VARIABLES =================
 
-int cmd_dome = 0;  // dome rotation rate
+int cmd_dome = 0;  // initial dome rotation rate
 
+
+// ================= LEG VARIABLES =================
+
+const int max_leg_speed = 60; // max foot motor speed. Goes up to 90.
+Servo LegL;
+Servo LegR;
 
 // ================= HOLO-PROJECTOR VARIABLES =================
 
-const uint8_t HP1_LED = 30;   // digital pinouts for holo-projector 1
-const uint8_t HP1_S1  = 32;   //    includes 1 LED and 2 servos
-const uint8_t HP1_S2  = 34;
+const uint8_t HP_LED[3] = {31, 38, 45}; // digital pinouts for holo-projector LEDs
+const uint8_t HP_S1_pin[3]  = {33, 42, 47}; // digital pinouts for holo-projector servo 1
+const uint8_t HP_S2_pin[3]  = {35, 40, 49}; // digital pinouts for holo-projector servo 2
 
-const uint8_t HP2_LED = 38;   // digital pinouts for holo-projector 2
-const uint8_t HP2_S1  = 40;
-const uint8_t HP2_S2  = 42;
-
-const uint8_t HP3_LED = 46;   // digital pinouts for holo-projector 3
-const uint8_t HP3_S1  = 48;
-const uint8_t HP3_S2  = 50;
-
-const uint8_t HP1S1_center = 75;  // neutral angle of holo-projector 1, servo 1 (1S1)
-const uint8_t HP1S2_center = 80;  // neutral angle of holo-projector 1, servo 2 (1S2)
-const uint8_t HP2S1_center = 90;
-const uint8_t HP2S2_center = 80;  // these values should be calibrated after setting the servo to 90
-const uint8_t HP3S1_center = 110; //    and then attaching the servo arms parallel to the motor mount.
-const uint8_t HP3S2_center = 75;  // when the holo-projector is pointed down, the motors should be
-                              //    arranged in a clockwise order with arms pointed clockwise also.
-
+const uint8_t HP_S1_center[3] = {75, 80, 110};  // neutral angle of servo 1 for each holoprojector (S1)
+const uint8_t HP_S2_center[3] = {75, 90, 75};  // neutral angle of servo 2 for each holoprojector (S2)
 const uint8_t servo_rot_max = 30; // max rotation of holo-projector servos about neutral point
+
+// LED modes - initialize off
+uint8_t LED_mode[3] = {0, 0, 0}; // which mode the HP LED is on
+const uint8_t max_LED_mode = 4; // how many modes of HP LEDs there are.
+unsigned long LED_timer[3] = {0, 0, 0}; // timer for blinking LED
+bool LED_state[3] = {false, false, false};
+
 
 const unsigned long doubleClickMinDelay = 30;
 const unsigned long doubleClickMaxDelay = 500;
@@ -120,4 +122,5 @@ Servo HP2S1;
 Servo HP2S2;
 Servo HP3S1;
 Servo HP3S2;
-
+Servo HP_S1[3] = {HP1S1, HP2S1, HP3S1};
+Servo HP_S2[3] = {HP1S2, HP2S2, HP3S2};
