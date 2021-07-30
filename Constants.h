@@ -11,20 +11,14 @@
 
 // ================= CHANNELS =================
 
-#define channelA  0
-#define channelB  1
-#define channelC  2
-#define channelD  3
-#define channelE  4
-
-#define channel_legL  channelA
-#define channel_dome  channelB
-#define channel_legR  channelC
-#define channel_mp3   channelD
-#define channel_holo  channelE
+#define channel_legL  0
+#define channel_dome  2
+#define channel_legR  3
+#define channel_mp3   5
+#define channel_holo  6
 
 uint8_t channel = 0;
-uint8_t channel_max = 5;
+uint8_t channel_max = 7;
 
 
 /*  Note: Servos and motors combined draw too much power for the batteries to handle.
@@ -88,7 +82,7 @@ int cmd_dome = 0;  // initial dome rotation rate
 
 // ================= LEG VARIABLES =================
 
-const int max_leg_speed = 60; // max foot motor speed. Goes up to 90.
+const int max_leg_speed = 90; // max foot motor speed. Goes up to 90.
 Servo LegL;
 Servo LegR;
 

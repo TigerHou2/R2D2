@@ -118,12 +118,16 @@ void loop()
       // ================= LEG CONTROLS =================
       //    Drive the R2D2 using the left joystick.
 
-      if (channel_legL == channel) {
-          LegL.write(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i))+mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))-90);      
+      if (channel_legL == channel || channel_legL == channel-1) {
+          LegL.write(mapCtrl_legs(-Xbox.getAnalogHat(LeftHatY, i))+mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))-90); 
+          Serial.println("Left leg:");
+          Serial.println(mapCtrl_legs(-Xbox.getAnalogHat(LeftHatY, i)));     
       }
 
-      if (channel_legR == channel) {
-          LegR.write(mapCtrl_legs(Xbox.getAnalogHat(LeftHatY, i))-mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))+90);
+      if (channel_legR == channel || channel_legR == channel-1) {
+          LegR.write(mapCtrl_legs(-Xbox.getAnalogHat(LeftHatY, i))-mapCtrl_legs(Xbox.getAnalogHat(LeftHatX, i))+90);
+          Serial.println("Right leg:");
+          Serial.println(mapCtrl_legs(-Xbox.getAnalogHat(LeftHatY, i)));
       }
       
       // ================= DOME CONTROLS =================
